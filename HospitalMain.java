@@ -49,12 +49,14 @@ public class HospitalMain {
     }
 
     public static void main(String[] args) {
+
         Scanner sc = new Scanner(System.in);
         HospitalStore store = new HospitalStore();
 
         try {
             store.loadPatients("patients.csv");
             store.loadDoctors("doctors.csv");
+            store.loadAppointments("appointments.csv");
         } catch (Exception e) {
             System.out.println("Could not load data: " + e.getMessage());
         }
@@ -69,6 +71,7 @@ public class HospitalMain {
             String dept = readNonEmpty(sc, "Department: ");
             String spec = readNonEmpty(sc, "Specialization: ");
             double fee = readDoubleMin(sc, "Consultation fee (KES): ", 0.0);
+
             Doctor doctor = new Doctor(dId, dName, dPhone, staffNo, dept, spec, fee);
             store.addDoctor(doctor);
 
@@ -76,23 +79,27 @@ public class HospitalMain {
             String pName = readNonEmpty(sc, "Patient name: ");
             String pPhone = readNonEmpty(sc, "Patient phone: ");
             String illness = readNonEmpty(sc, "Illness: ");
+
             Patient patient = new Patient(pId, pName, pPhone, illness);
             store.addPatient(patient);
 
             System.out.println("\n--- Roles ---");
             System.out.println(doctor.getName() + " Role: " + doctor.getRole());
             System.out.println(patient.getName() + " Role: " + patient.getRole());
+
             doctor.performDuty();
             patient.admitPatient();
 
             String apptId = readNonEmpty(sc, "\nAppointment ID: ");
             String date = readNonEmpty(sc, "Appointment date (e.g., 26 Feb 2026): ");
+
             Appointment appt = new Appointment(apptId, doctor, patient, date);
             store.addAppointment(appt);
             doctor.scheduleAppointment(appt);
 
             String billId = readNonEmpty(sc, "\nBill ID: ");
             double amount = readDoubleMin(sc, "Bill amount (KES): ", 0.0);
+
             Billing bill = new Billing(billId, patient, amount);
 
             System.out.println("\n--- Billing ---");
@@ -100,6 +107,7 @@ public class HospitalMain {
 
             double pay = readDoubleMin(sc, "Payment amount (KES): ", 0.0);
             bill.makePayment(pay);
+
             bill.generateBill();
 
             String cancel = readNonEmpty(sc, "\nCancel appointment? (yes/no): ").toLowerCase();
@@ -116,6 +124,7 @@ public class HospitalMain {
 
             store.savePatients("patients.csv");
             store.saveDoctors("doctors.csv");
+            store.saveAppointments("appointments.csv");
             System.out.println("Data saved.");
 
         } catch (Exception e) {
