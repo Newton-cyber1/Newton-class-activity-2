@@ -50,11 +50,18 @@ public class HospitalMain {
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
+        HospitalStore store = new HospitalStore();
+
+        try {
+            store.loadPatients("patients.csv");
+            store.loadDoctors("doctors.csv");
+        } catch (Exception e) {
+            System.out.println("Could not load data: " + e.getMessage());
+        }
 
         try {
             System.out.println("=== Hospital Management System ===");
 
-            // Doctor input (matches Doctor constructor)
             String dId = readNonEmpty(sc, "Doctor ID: ");
             String dName = readNonEmpty(sc, "Doctor name: ");
             String dPhone = readNonEmpty(sc, "Doctor phone: ");
@@ -62,35 +69,30 @@ public class HospitalMain {
             String dept = readNonEmpty(sc, "Department: ");
             String spec = readNonEmpty(sc, "Specialization: ");
             double fee = readDoubleMin(sc, "Consultation fee (KES): ", 0.0);
-
             Doctor doctor = new Doctor(dId, dName, dPhone, staffNo, dept, spec, fee);
+            store.addDoctor(doctor);
 
-            // Patient input (matches Patient constructor)
             String pId = readNonEmpty(sc, "\nPatient ID: ");
             String pName = readNonEmpty(sc, "Patient name: ");
             String pPhone = readNonEmpty(sc, "Patient phone: ");
             String illness = readNonEmpty(sc, "Illness: ");
-
             Patient patient = new Patient(pId, pName, pPhone, illness);
+            store.addPatient(patient);
 
             System.out.println("\n--- Roles ---");
             System.out.println(doctor.getName() + " Role: " + doctor.getRole());
             System.out.println(patient.getName() + " Role: " + patient.getRole());
-
             doctor.performDuty();
             patient.admitPatient();
 
-            // Appointment input (matches Appointment constructor)
             String apptId = readNonEmpty(sc, "\nAppointment ID: ");
             String date = readNonEmpty(sc, "Appointment date (e.g., 26 Feb 2026): ");
-
             Appointment appt = new Appointment(apptId, doctor, patient, date);
+            store.addAppointment(appt);
             doctor.scheduleAppointment(appt);
 
-            // Billing input (matches Billing constructor)
             String billId = readNonEmpty(sc, "\nBill ID: ");
             double amount = readDoubleMin(sc, "Bill amount (KES): ", 0.0);
-
             Billing bill = new Billing(billId, patient, amount);
 
             System.out.println("\n--- Billing ---");
@@ -98,10 +100,8 @@ public class HospitalMain {
 
             double pay = readDoubleMin(sc, "Payment amount (KES): ", 0.0);
             bill.makePayment(pay);
-
             bill.generateBill();
 
-            // Optional: cancel
             String cancel = readNonEmpty(sc, "\nCancel appointment? (yes/no): ").toLowerCase();
             if (cancel.equals("yes")) {
                 doctor.cancelAppointment(appt);
@@ -113,6 +113,10 @@ public class HospitalMain {
             System.out.println("Total persons: " + Person.getTotalPersons());
             System.out.println("Total patients: " + Patient.getTotalPatients());
             System.out.println("Total appointments: " + Appointment.getTotalAppointments());
+
+            store.savePatients("patients.csv");
+            store.saveDoctors("doctors.csv");
+            System.out.println("Data saved.");
 
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
