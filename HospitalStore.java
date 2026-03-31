@@ -43,6 +43,8 @@ public class HospitalStore {
     public ArrayList<Doctor> getDoctors() { return doctors; }
     public ArrayList<Appointment> getAppointments() { return appointments; }
 
+    // ---------------- SAVE ----------------
+
     public void savePatients(String file) throws IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(file));
         for (Patient p : patients) {
@@ -55,20 +57,40 @@ public class HospitalStore {
     public void saveDoctors(String file) throws IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(file));
         for (Doctor d : doctors) {
-            bw.write(d.getId() + "," + d.getName() + "," + d.getPhone() + "," + d.getStaffNumber() + "," + d.getDepartment() + "," + d.getSpecialization() + "," + d.getConsultationFee());
+            bw.write(d.getId() + "," + d.getName() + "," + d.getPhone() + "," +
+                    d.getStaffNumber() + "," + d.getDepartment() + "," +
+                    d.getSpecialization() + "," + d.getConsultationFee());
             bw.newLine();
         }
         bw.close();
     }
 
+    public void saveAppointments(String file) throws IOException {
+        BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+        for (Appointment a : appointments) {
+            // appointmentId,doctorId,patientId,date
+            bw.write(a.getAppointmentId() + "," +
+                    a.getDoctor().getId() + "," +
+                    a.getPatient().getId() + "," +
+                    a.getDate());
+            bw.newLine();
+        }
+        bw.close();
+    }
+
+    // ---------------- LOAD ----------------
+
     public void loadPatients(String file) throws IOException {
         File f = new File(file);
         if (!f.exists()) return;
+
         BufferedReader br = new BufferedReader(new FileReader(file));
         String line;
+
         while ((line = br.readLine()) != null) {
-            String[] x = line.split(",");
+            String[] x = line.split(",", -1);
             if (x.length < 4) continue;
+
             Patient p = new Patient(x[0], x[1], x[2], x[3]);
             addPatient(p);
         }
@@ -78,13 +100,43 @@ public class HospitalStore {
     public void loadDoctors(String file) throws IOException {
         File f = new File(file);
         if (!f.exists()) return;
+
         BufferedReader br = new BufferedReader(new FileReader(file));
         String line;
+
         while ((line = br.readLine()) != null) {
-            String[] x = line.split(",");
+            String[] x = line.split(",", -1);
             if (x.length < 7) continue;
+
             Doctor d = new Doctor(x[0], x[1], x[2], x[3], x[4], x[5], Double.parseDouble(x[6]));
             addDoctor(d);
+        }
+        br.close();
+    }
+
+    public void loadAppointments(String file) throws IOException {
+        File f = new File(file);
+        if (!f.exists()) return;
+
+        BufferedReader br = new BufferedReader(new FileReader(file));
+        String line;
+
+        while ((line = br.readLine()) != null) {
+            String[] x = line.split(",", -1);
+            if (x.length < 4) continue;
+
+            String apptId = x[0];
+            String doctorId = x[1];
+            String patientId = x[2];
+            String date = x[3];
+
+            Doctor d = findDoctor(doctorId);
+            Patient p = findPatient(patientId);
+
+            if (d != null && p != null) {
+                Appointment a = new Appointment(apptId, d, p, date);
+                addAppointment(a);
+            }
         }
         br.close();
     }
